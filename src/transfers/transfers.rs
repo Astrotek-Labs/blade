@@ -38,13 +38,13 @@ impl Transfer {
         }
     }
 
-    /// Set new filepath based on incoming path. Will be same location, just with prefix "PROTON_"
+    /// Set new filepath based on incoming path. Will be same location, just with prefix "BLADE_"
     pub fn _update_path(&mut self, filepath: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        // set output file path; add 'PROTON_' designation
+        // set output file path; add 'BLADE_' designation
         let mut path = PathBuf::from(filepath);
         let filename = path.file_name().unwrap().to_string_lossy();
         // add designation to string lossy filename
-        let amended_filename = format!("PROTON_{}", filename);
+        let amended_filename = format!("BLADE_{}", filename);
         // set file name, push to mut path
         path.set_file_name(amended_filename);
         self.output_filepath = path;
