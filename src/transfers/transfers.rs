@@ -1,13 +1,3 @@
-/* OVERALL COMPRESSION ORCHESTRATION PROCESS
-    1) Cross reference incoming dataset against valid schema
-    2) Pass columns through independent algorithms
-        a. Handled in separate files due to specialized
-           compression algorithms for each column type
-    3) Generate dataframes, stack, prepare for writing
-       to the aggregated parquet file
-    4) Write output parquet via `_update_path` impl
- */
-
 // use std::fs::File;
 use std::path::PathBuf;
 // use polars::prelude::*;
@@ -50,6 +40,8 @@ impl Transfer {
         Ok(())
     }
 
+    /// Compress iteratively goes through parquet file columns, applying specific
+    /// compression algorithms to each, to maximize compression ratios.
     pub fn compress(&mut self, filepath: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         
         // Instantiate TransferIngestion; validate schema against transfer dataset
