@@ -37,6 +37,7 @@ impl Transfer {
     }
 
     /// Set new filepath based on incoming path. Will be same location, just with prefix "BLADE_"
+    /// Best practice is to store input (non-compressed dataset) where you desire output.
     pub fn _update_path(&mut self, filepath: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         // set output file path; add 'BLADE_' designation
         let mut path = PathBuf::from(filepath);
@@ -81,26 +82,8 @@ impl Transfer {
         // println!("value string: {:?}", v_s_comp);
 
 
-
-        // example code for writing stacked parquet dfs
-        // TODO: solve for index values
-        // let mut df1 = df!(
-        //     "id" => &[1, 2, 3],
-        //     "name" => &["a", "b", "c"]
-        // )?;
-        
-        // // Second dataframe
-        // let df2 = df!(
-        //     "id" => &[4, 5, 6, 7],
-        //     "name" => &["d", "e", "f", "g"]
-        // )?;
-        
-        // // Concatenate
-        // let mut combined = df1.vstack(&df2)?;
-        
-        // // Write to Parquet
-        // let mut file = File::create("data/combined.parquet")?;
-        // ParquetWriter::new(&mut file).finish(&mut combined)?;
+        let upfp = self._update_path(filepath);
+        println!("output fp: {:?}", self.output_filepath);
 
         Ok(())
     }
