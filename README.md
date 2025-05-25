@@ -17,3 +17,8 @@ Blade will eventually morph to a Rust crate, but for now is in alpha/early devel
 - Testing compression ratios against standard solutions
 - Exploring optimal algorithms for different data columns
 - Planning migration to a Rust crate through [crates](https://crates.io/)
+
+
+## Example
+- Run transfer dataset compression
+    - cargo run -- "data/ethereum__erc20_transfers__10001000_to_10001999.parquet"                          

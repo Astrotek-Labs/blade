@@ -66,11 +66,12 @@ impl NormalizedCompressedValueStrings {
             .sum::<usize>();
         // Calculate size of compresed vec
         let compressed_size = normalized_vec.capacity() * mem::size_of::<u16>();
+        let compression_ratio = original_str_len as f64 / compressed_size as f64;
 
         // Print comparisons to terminal
         println!("Original block index: {} bytes", original_str_len.red());
         println!("Compressed block index: {} bytes", compressed_size.green());
-        println!("Compression Ratio: {:.2}", original_str_len as f64 / compressed_size as f64);
+        println!("Compression ratio {:.2}", compression_ratio.bright_blue());
 
         self.normalized_vs_vec.extend(normalized_vec);
 
@@ -80,6 +81,7 @@ impl NormalizedCompressedValueStrings {
     }
 
 
+    // TODO: decompress
     pub fn decompress_value_string(&mut self, dataset: &DataFrame) -> Result<(), Box<dyn std::error::Error>> {
 
         Ok(())

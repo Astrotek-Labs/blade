@@ -52,10 +52,11 @@ impl RLECompressedTransactionIndexSeries {
         let transaction_index_size = transaction_index_vec.capacity() * mem::size_of::<Option<u32>>();
         let compressed_size = self.values.capacity() * mem::size_of::<u32>() + 
                             self.counts.capacity() * mem::size_of::<u16>();
+        let compression_ratio = transaction_index_size as f64 / compressed_size as f64;
 
         println!("Original transaction index: {} bytes", transaction_index_size.red());
         println!("Compressed transaction index: {} bytes", compressed_size.green());
-        println!("Compression Ratio: {:.2}", transaction_index_size as f64 / compressed_size as f64);
+        println!("Compression ratio {:.2}", compression_ratio.bright_blue());
 
         // assert that output is equal in len to input
         // assert_eq!()

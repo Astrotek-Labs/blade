@@ -20,13 +20,11 @@ use crate::transfers::compression::{
     NormalizedCompressedValueStrings
 };
 
-
 pub struct Transfer {
     // pub og_df: DataFrame,            // incoming dataset (from filepath)
     // pub compressed_df: DataFrame,    // dataset after compression
     pub output_filepath: PathBuf,       // filepath for wrting compressed file
 }
-
 
 impl Transfer {
 

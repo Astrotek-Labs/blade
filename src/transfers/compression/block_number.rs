@@ -57,11 +57,12 @@ impl RLECompressedBlockNumberSeries {
         let block_size = block_vec.capacity() * mem::size_of::<Option<u32>>();
         let compressed_size = self.values.capacity() * mem::size_of::<u32>() + 
                             self.counts.capacity() * mem::size_of::<u16>();
+        let compression_ratio = block_size as f64 / compressed_size as f64;
 
         // Optional output print statements for comparison
         println!("Original block index: {} bytes", block_size.red());
         println!("Compressed block index: {} bytes", compressed_size.green());
-        println!("Compression Ratio: {:.2}", block_size as f64 / compressed_size as f64);
+        println!("Compression ratio {:.2}", compression_ratio.bright_blue());
 
         // assert that output is equal in len to input
         // assert_eq!()
