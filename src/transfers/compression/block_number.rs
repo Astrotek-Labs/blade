@@ -1,10 +1,11 @@
 use std::mem;
+use anyhow::Result;
 use polars::prelude::*;
 use owo_colors::OwoColorize;
 
 pub struct RLECompressedBlockNumberSeries {
     pub values: Vec<u32>,    // Unique values in sequence
-    pub counts: Vec<u16>,    // Count of consecutive repetitions
+    pub counts: Vec<u32>,    // Count of consecutive repetitions
 }
 
 impl RLECompressedBlockNumberSeries {
@@ -17,7 +18,7 @@ impl RLECompressedBlockNumberSeries {
     }
 
     /// Compress block number column in transfers dataset through RLE methodology.
-    pub fn compress_block_number(&mut self, dataset: &DataFrame) -> Result<(Vec<u32>, Vec<u16>), Box<dyn std::error::Error>> {
+    pub fn compress_block_number(&mut self, dataset: &DataFrame) -> Result<(Vec<u32>, Vec<u32>)> {
         // establish incoming col len // let num_rows = dataset.height();
 
         // Distill block_number column from incoming dataset and 
@@ -33,15 +34,16 @@ impl RLECompressedBlockNumberSeries {
         // Begin iteration setup by starting with the
         // first value of the vector, and set the count
         // to 1.
-        let mut current_value = block_vec[0].unwrap();
-        let mut current_count = 1 as u16;
+        let mut current_value: u32 = block_vec[0].unwrap();
+        // let mut current_count: u16 = 1 as u16;
+        let mut current_count: u32 = 1;
 
         // Iterate through block_vec, skipping the first
         // since that is set as current_value
         for block in block_vec.iter().skip(1) {
             let b = block.unwrap();
             if b == current_value {
-                current_count += 1 as u16;
+                current_count += 1 as u32;
             } else {
                 self.values.push(current_value);
                 self.counts.push(current_count.into());
@@ -70,6 +72,17 @@ impl RLECompressedBlockNumberSeries {
 
     }
 
+
+    pub fn create_compressed_df(&mut self, dataset: &DataFrame) -> Result<(), Box<dyn std::error::Error>> {
+
+        let _compressed_res = self.compress_block_number(dataset);
+        let s1 = Column::new("values".into(), &self.values);
+        let s2 = Column::new("counts".into(), &self.counts);
+        let df: PolarsResult<DataFrame> = DataFrame::new(vec![s1, s2]);
+        println!("df: {:?}", df);
+        Ok(())
+
+    }
 
     /// Decompression of RLE compressed block number data in the transfer dataset.
     pub fn decompress_block_number() -> Result<(), Box<dyn std::error::Error>> {

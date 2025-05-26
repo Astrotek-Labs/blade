@@ -14,3 +14,9 @@
 1. Transfers
 2. Logs
 3. Metadata (token)
+
+
+
+## Validity / Schema Checks
+- Checking for sound structure at individual column level since 
+  the aggregated parquet is siloed dataframes.

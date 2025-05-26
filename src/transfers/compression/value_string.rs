@@ -1,8 +1,5 @@
-/*
-    Normalization compression for value_string data column
-    within transfers dataset. Conversion from string --> 
-    BigDecimal --> f64 --> normalized vector.
- */
+ // Normalization compression for value_string column.
+ // String --> BigDecimal --> f64 --> normalized vector.
 
 use std::mem;
 use std::str::FromStr;
@@ -77,15 +74,14 @@ impl NormalizedCompressedValueStrings {
 
         Ok(self.normalized_vs_vec.clone())
 
-
     }
 
 
     // TODO: decompress
-    pub fn decompress_value_string(&mut self, dataset: &DataFrame) -> Result<(), Box<dyn std::error::Error>> {
-
-        Ok(())
-    }
+//     pub fn decompress_value_string(&mut self, dataset: &DataFrame) -> Result<(), Box<dyn std::error::Error>> {
+// 
+//         Ok(())
+//     }
 
 
 }
