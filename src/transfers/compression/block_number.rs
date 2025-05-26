@@ -79,6 +79,7 @@ impl RLECompressedBlockNumberSeries {
         let memory_usage = df.estimated_size();
         println!("dataframe size: {:?}", memory_usage);
         Ok(df)
+
     }
 
     /// Decompression of RLE compressed block number data in the transfer dataset.

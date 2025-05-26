@@ -12,16 +12,16 @@ use crate::transfers::compression::{
 };
 
 pub struct Transfer {
-    // pub og_df: DataFrame,            // incoming dataset (from filepath)
-    pub compressed_df: DataFrame,       // dataset after compression
-    pub output_filepath: PathBuf,       // filepath for wrting compressed file
+    pub dataframes: Vec<DataFrame>,            // vec of compressesd dataframes
+    pub compressed_df: DataFrame,              // dataset after stacking 
+    pub output_filepath: PathBuf,              // filepath for wrting compressed file
 }
 
 impl Transfer {
 
     pub fn new() -> Self {
         Self {
-            // og_df: DataFrame::default(),          // dataframe after schema check
+            dataframes: Vec::new(),                  // dataframe after schema check
             compressed_df: DataFrame::default(),     // compresed dataframe; pre file write
             output_filepath: PathBuf::new(),         // output filepath; 
         }
@@ -37,12 +37,6 @@ impl Transfer {
         Ok(())
     }
 
-    //  NOTE: Ensure congruency in df creation for various column compressions.
-    /*  Given there are multiple compression algorithms being used it is 
-        imperative to use the proper df creator function via transfers/utils.rs.
-        For example, RLE uses a value/count approach and will likely need 
-        different approaches to construction. */
-
     /// Compress iteratively goes through parquet file columns, applying specific
     /// compression algorithms to each, to maximize compression ratios.
     pub fn compress(&mut self, filepath: &PathBuf) -> Result<()> {
@@ -50,12 +44,6 @@ impl Transfer {
         // Instantiate TransferIngestion (ingestion.rs); validate schema against transfer dataset
         let mut transfer: TransferIngestion = TransferIngestion::new();
         let schema_check: DataFrame = transfer.check_schema_validity(filepath).unwrap();
-
-        // OPTIONAL: check for size of schema col vs compressed col
-        // let series = schema_check.column("block_number")?;
-        // let temp_df = DataFrame::new(vec![series.clone()])?;
-        // let series_memory = temp_df.estimated_size();
-        // println!("est sch size {:?}", series_memory);
 
 
        
