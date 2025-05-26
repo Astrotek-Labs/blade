@@ -19,10 +19,8 @@ impl RLECompressedBlockNumberSeries {
 
     /// Compress block number column in transfers dataset through RLE methodology.
     pub fn compress_block_number(&mut self, dataset: &DataFrame) -> Result<(Vec<u32>, Vec<u32>)> {
-        // establish incoming col len // let num_rows = dataset.height();
 
-        // Distill block_number column from incoming dataset and 
-        // convert to vec of type u32
+        // Distill block_number column from incoming dataset and convert to u32
         let blocks = dataset.column("block_number").unwrap();
         let block_vec: Vec<Option<u32>> = blocks.u32()?.into_iter().collect();
 
@@ -31,11 +29,8 @@ impl RLECompressedBlockNumberSeries {
             return Ok((Vec::new(), Vec::new()));
         }
 
-        // Begin iteration setup by starting with the
-        // first value of the vector, and set the count
-        // to 1.
+        // Iterate with the first value of vector; set count to 1.
         let mut current_value: u32 = block_vec[0].unwrap();
-        // let mut current_count: u16 = 1 as u16;
         let mut current_count: u32 = 1;
 
         // Iterate through block_vec, skipping the first
@@ -62,9 +57,9 @@ impl RLECompressedBlockNumberSeries {
         let compression_ratio = block_size as f64 / compressed_size as f64;
 
         // Optional output print statements for comparison
-        println!("Original block index: {} bytes", block_size.red());
-        println!("Compressed block index: {} bytes", compressed_size.green());
-        println!("Compression ratio {:.2}", compression_ratio.bright_blue());
+        // println!("Original block index: {} bytes", block_size.red());
+        // println!("Compressed block index: {} bytes", compressed_size.green());
+        // println!("Compression ratio {:.2}", compression_ratio.bright_blue());
 
         // assert that output is equal in len to input
         // assert_eq!()
@@ -73,15 +68,17 @@ impl RLECompressedBlockNumberSeries {
     }
 
 
-    pub fn create_compressed_df(&mut self, dataset: &DataFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // pub fn create_compressed_df(&mut self, dataset: &DataFrame) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn create_compressed_df(&mut self, dataset: &DataFrame) -> Result<DataFrame> {
 
+        // call compress function to create value / count references
         let _compressed_res = self.compress_block_number(dataset);
         let s1 = Column::new("values".into(), &self.values);
         let s2 = Column::new("counts".into(), &self.counts);
-        let df: PolarsResult<DataFrame> = DataFrame::new(vec![s1, s2]);
-        println!("df: {:?}", df);
-        Ok(())
-
+        let df = DataFrame::new(vec![s1, s2])?;
+        let memory_usage = df.estimated_size();
+        println!("dataframe size: {:?}", memory_usage);
+        Ok(df)
     }
 
     /// Decompression of RLE compressed block number data in the transfer dataset.

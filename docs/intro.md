@@ -8,8 +8,6 @@
 5. Output filepath is in place from incoming filepath with prefix of "_BLADE"
 
 
-
-
 ## Supported datasets
 1. Transfers
 2. Logs
