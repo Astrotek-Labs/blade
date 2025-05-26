@@ -1,4 +1,4 @@
-# OVERALL COMPRESSION ORCHESTRATION PROCESS
+# ORCHESTRATION PROCESS
 
 1. Cross reference incoming dataset against valid schema
 2. Pass columns through independent algorithms
