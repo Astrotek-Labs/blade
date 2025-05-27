@@ -28,7 +28,7 @@ impl Transfer {
     }
 
     /// Set new filepath inplace with prefix "BLADE_". Store non-compressed data where you want output.
-    pub fn _update_path(&mut self, filepath: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn _update_path(&mut self, filepath: &PathBuf) -> Result<()> {
         let mut path = PathBuf::from(filepath);
         let filename = path.file_name().unwrap().to_string_lossy();
         let amended_filename = format!("BLADE_{}", filename);
@@ -45,21 +45,21 @@ impl Transfer {
         let mut transfer: TransferIngestion = TransferIngestion::new();
         let schema_check: DataFrame = transfer.check_schema_validity(filepath).unwrap();
 
-
-       
         // 1) block_number: rle compression
         let mut block_compression: RLECompressedBlockNumberSeries = RLECompressedBlockNumberSeries::new(); 
-        // let _compressed_blocks: Result<(Vec<u32>, Vec<u32>), anyhow::Error> = block_compression.compress_block_number(&schema_check);
         let compressed_blocks_df = block_compression.create_compressed_df(&schema_check);
-        println!("{:?}", compressed_blocks_df);
+        self.dataframes.push(compressed_blocks_df?);
 
-//         // 2) transaction_index: rle compression
-//         let mut transaction_compression: RLECompressedTransactionIndexSeries = RLECompressedTransactionIndexSeries::new();
-//         let _compressed_trans_index = transaction_compression.compress_transaction_index(&schema_check);
-// 
-//         // n) value_strings: normalization compression 
-//         let mut value_string_compression: NormalizedCompressedValueStrings = NormalizedCompressedValueStrings::new();
-//         let _compressed_value_string = value_string_compression.compress_value_string(&schema_check);
+        // 2) transaction_index: rle compression
+        let mut transaction_compression: RLECompressedTransactionIndexSeries = RLECompressedTransactionIndexSeries::new();
+        let compressed_trans_index = transaction_compression.create_compressed_df(&schema_check);
+        self.dataframes.push(compressed_trans_index?);
+
+        
+        // n) value_strings: normalization compression 
+        let mut value_string_compression: NormalizedCompressedValueStrings = NormalizedCompressedValueStrings::new();
+        let _compressed_value_string = value_string_compression.compress(&schema_check);
+        println!("this is vstring: {:?}", _compressed_value_string);
 
         Ok(())
     }

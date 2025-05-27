@@ -2,13 +2,13 @@
  // String --> BigDecimal --> f64 --> normalized vector.
 
 use std::mem;
+use anyhow::Result;
 use std::str::FromStr;
 use polars::prelude::*;
 use owo_colors::OwoColorize;
 use bigdecimal::BigDecimal;
 use bigdecimal::ToPrimitive;
 use float_eq::assert_float_eq;
-
 
 pub struct NormalizedCompressedValueStrings {
     normalized_vs_vec: Vec<f64>
@@ -23,7 +23,7 @@ impl NormalizedCompressedValueStrings {
     }
 
     /// Compress value string column of Transfer dataset through vector normalization.
-    pub fn compress_value_string(&mut self, dataset: &DataFrame) -> Result<Vec<f64>, Box<dyn std::error::Error>> {
+    pub fn compress(&mut self, dataset: &DataFrame) -> Result<Vec<f64>> {
 
         // Distill value_string column from dataset and unwrap the str's
         let value_strings: &Column = dataset.column("value_string").unwrap();
@@ -63,11 +63,13 @@ impl NormalizedCompressedValueStrings {
             .sum::<usize>();
         // Calculate size of compresed vec
         let compressed_size = normalized_vec.capacity() * mem::size_of::<u16>();
+        println!("len: {}, capacity: {}", normalized_vec.len(), normalized_vec.capacity());
+
         let compression_ratio = original_str_len as f64 / compressed_size as f64;
 
         // Print comparisons to terminal
-        println!("Original block index: {} bytes", original_str_len.red());
-        println!("Compressed block index: {} bytes", compressed_size.green());
+        println!("Original value string index: {} bytes", original_str_len.red());
+        println!("Compressed value string index: {} bytes", compressed_size.green());
         println!("Compression ratio {:.2}", compression_ratio.bright_blue());
 
         self.normalized_vs_vec.extend(normalized_vec);
@@ -75,6 +77,17 @@ impl NormalizedCompressedValueStrings {
         Ok(self.normalized_vs_vec.clone())
 
     }
+
+    
+    pub fn create_compressed_df(&mut self, dataset: &DataFrame) -> Result<DataFrame> {
+        // call compress function to create value / count references
+        let _compressed_res = self.compress(dataset);
+        let s1 = Column::new("block_values".into(), &self.normalized_vs_vec);
+        let s2 = Column::new("block_counts".into(), &self.counts);
+        let df = DataFrame::new(vec![s1, s2])?;
+        Ok(df)
+    }
+
 
 
     // TODO: decompress

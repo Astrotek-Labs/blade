@@ -1,10 +1,11 @@
 use std::mem;
+use anyhow::Result;
 use polars::prelude::*;
 use owo_colors::OwoColorize;
 
 pub struct RLECompressedTransactionIndexSeries {
     pub values: Vec<u32>,    // Unique values in sequence
-    pub counts: Vec<u16>,    // Count of consecutive repetitions
+    pub counts: Vec<u32>,    // Count of consecutive repetitions
 }
 
 impl RLECompressedTransactionIndexSeries {
@@ -16,12 +17,10 @@ impl RLECompressedTransactionIndexSeries {
         }
     }
 
-    pub fn compress_transaction_index(&mut self, dataset: &DataFrame) -> Result<(Vec<u32>, Vec<u16>), Box<dyn std::error::Error>> {
+    pub fn compress(&mut self, dataset: &DataFrame) -> Result<(Vec<u32>, Vec<u32>)> {
         // establish incoming col len // let num_rows = dataset.height();
-
         let transaction_index = dataset.column("transaction_index").unwrap();
         let transaction_index_vec: Vec<Option<u32>> = transaction_index.u32()?.into_iter().collect();
-        // println!("{:?}", transaction_index_vec);
 
         // early return if vec is empty
         if transaction_index_vec.is_empty() {
@@ -30,13 +29,14 @@ impl RLECompressedTransactionIndexSeries {
 
        // set initial transaction index as current value, and initial count as 1
         let mut current_value = transaction_index_vec[0].unwrap();
-        let mut current_count = 1 as u16;
+        // let mut current_count = 1 as u16;
+        let mut current_count: u32 = 1;
 
         // iterate through transaction index, skip first, 
         for transaction_index in transaction_index_vec.iter().skip(1) {
             let b = transaction_index.unwrap();
             if b == current_value {
-                current_count += 1 as u16;
+                current_count += 1 as u32;
             } else {
                 self.values.push(current_value);
                 self.counts.push(current_count.into());
@@ -54,15 +54,30 @@ impl RLECompressedTransactionIndexSeries {
                             self.counts.capacity() * mem::size_of::<u16>();
         let compression_ratio = transaction_index_size as f64 / compressed_size as f64;
 
-        println!("Original transaction index: {} bytes", transaction_index_size.red());
-        println!("Compressed transaction index: {} bytes", compressed_size.green());
-        println!("Compression ratio {:.2}", compression_ratio.bright_blue());
+        // println!("Original transaction index: {} bytes", transaction_index_size.red());
+        // println!("Compressed transaction index: {} bytes", compressed_size.green());
+        // println!("Compression ratio {:.2}", compression_ratio.bright_blue());
 
         // assert that output is equal in len to input
         // assert_eq!()
-
         Ok((self.values.clone(), self.counts.clone()))
     }
+
+
+    pub fn create_compressed_df(&mut self, dataset: &DataFrame) -> Result<DataFrame> {
+        // call compress function to create value / count references
+        let _compressed_res = self.compress(dataset);
+        let s1 = Column::new("trans_index_values".into(), &self.values);
+        let s2 = Column::new("trans_index_counts".into(), &self.counts);
+        let df = DataFrame::new(vec![s1, s2])?;
+        Ok(df)
+    }
+
+    /// Decompression of RLE compressed block number data in the transfer dataset.
+    pub fn decompress() -> Result<()> {
+        Ok(())
+    }
+
 }
 
 
