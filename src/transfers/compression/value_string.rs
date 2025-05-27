@@ -11,19 +11,21 @@ use bigdecimal::ToPrimitive;
 use float_eq::assert_float_eq;
 
 pub struct NormalizedCompressedValueStrings {
-    normalized_vs_vec: Vec<f64>
+    index: Vec<u32>,
+    normalized_vs_vec: Vec<f64>,
 }
 
 impl NormalizedCompressedValueStrings {
 
     pub fn new() -> Self {
         Self {
-            normalized_vs_vec: Vec::new()
+            index: Vec::new(),
+            normalized_vs_vec: Vec::new(),
         }
     }
 
     /// Compress value string column of Transfer dataset through vector normalization.
-    pub fn compress(&mut self, dataset: &DataFrame) -> Result<Vec<f64>> {
+    pub fn compress(&mut self, dataset: &DataFrame) -> Result<(Vec<u32>, Vec<f64>)> {
 
         // Distill value_string column from dataset and unwrap the str's
         let value_strings: &Column = dataset.column("value_string").unwrap();
@@ -53,7 +55,7 @@ impl NormalizedCompressedValueStrings {
         // NOTE: Optionally, assert equivalence between normalized vec and result vec
         // assert_eq!(normalized_vec.len(), result.len());
 
-        // Assert that the sum of the squares is approximately 1.0 
+        // Assert that the sum of the squares is approximately 1.0
         // to verify normalization accuracy.
         assert_float_eq!(sum_of_squares, 1.0, abs <= 1e-10);
 
@@ -61,10 +63,9 @@ impl NormalizedCompressedValueStrings {
         let original_str_len = value_strings_series.iter()
             .map(|s| s.unwrap().len())
             .sum::<usize>();
+
         // Calculate size of compresed vec
         let compressed_size = normalized_vec.capacity() * mem::size_of::<u16>();
-        println!("len: {}, capacity: {}", normalized_vec.len(), normalized_vec.capacity());
-
         let compression_ratio = original_str_len as f64 / compressed_size as f64;
 
         // Print comparisons to terminal
@@ -72,9 +73,13 @@ impl NormalizedCompressedValueStrings {
         println!("Compressed value string index: {} bytes", compressed_size.green());
         println!("Compression ratio {:.2}", compression_ratio.bright_blue());
 
+        // Get index len and set values to return
         self.normalized_vs_vec.extend(normalized_vec);
+        self.index = (1..=self.normalized_vs_vec.len())
+            .map(|i| i as u32)
+            .collect();
 
-        Ok(self.normalized_vs_vec.clone())
+        Ok((self.index.clone(), self.normalized_vs_vec.clone()))
 
     }
 
@@ -82,8 +87,8 @@ impl NormalizedCompressedValueStrings {
     pub fn create_compressed_df(&mut self, dataset: &DataFrame) -> Result<DataFrame> {
         // call compress function to create value / count references
         let _compressed_res = self.compress(dataset);
-        let s1 = Column::new("block_values".into(), &self.normalized_vs_vec);
-        let s2 = Column::new("block_counts".into(), &self.counts);
+        let s1 = Column::new("value_string_index".into(), &self.index);
+        let s2 = Column::new("value_string_normalized".into(), &self.normalized_vs_vec);
         let df = DataFrame::new(vec![s1, s2])?;
         Ok(df)
     }

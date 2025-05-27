@@ -23,3 +23,27 @@
 // TODO: write to output file path corresponding to data type (eg: Transfers)
 // let mut file = File::create("data/combined.parquet")?;
 // ParquetWriter::new(&mut file).finish(&mut combined)?;
+
+
+use std::fs::File;
+use anyhow::Result;
+use std::path::PathBuf;
+use polars::prelude::*;
+
+pub fn parquet_writer(output_filepath: PathBuf, dataframes: Vec<DataFrame>) -> Result<()> {
+
+    // Stack all DataFrames vertically
+    let mut combined_df = dataframes[0].clone();
+    for df in &dataframes[1..] {
+        combined_df = combined_df.vstack(df)?;
+    }
+
+    // Write to parquet
+    // let mut file = File::create("data/combined.parquet")?;
+
+    let mut file = File::create(&output_filepath)?;
+    println!("file {:?}", file);
+    ParquetWriter::new(&mut file).finish(&mut combined_df)?;
+
+    Ok(())
+}

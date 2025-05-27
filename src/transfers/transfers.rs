@@ -10,6 +10,7 @@ use crate::transfers::compression::{
     RLECompressedTransactionIndexSeries, 
     NormalizedCompressedValueStrings
 };
+use super::writer::parquet_writer;
 
 pub struct Transfer {
     pub dataframes: Vec<DataFrame>,            // vec of compressesd dataframes
@@ -54,12 +55,22 @@ impl Transfer {
         let mut transaction_compression: RLECompressedTransactionIndexSeries = RLECompressedTransactionIndexSeries::new();
         let compressed_trans_index = transaction_compression.create_compressed_df(&schema_check);
         self.dataframes.push(compressed_trans_index?);
-
         
         // n) value_strings: normalization compression 
         let mut value_string_compression: NormalizedCompressedValueStrings = NormalizedCompressedValueStrings::new();
-        let _compressed_value_string = value_string_compression.compress(&schema_check);
-        println!("this is vstring: {:?}", _compressed_value_string);
+        let comopressed_value_string = value_string_compression.create_compressed_df(&schema_check);
+        self.dataframes.push(comopressed_value_string?);
+        // println!("this is vstring: {:?}", comopressed_value_string);
+
+        let _ = self._update_path(filepath)?; // Add ? to propagate errors
+        let _ = parquet_writer(self.output_filepath.clone(), self.dataframes.clone());
+        
+        if self.output_filepath.exists() {
+            let size = std::fs::metadata(&self.output_filepath)?.len();
+            println!("File created! Size: {} bytes", size);
+        } else {
+            println!("File was NOT created");
+        }
 
         Ok(())
     }
