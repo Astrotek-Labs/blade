@@ -65,7 +65,7 @@ impl Transfer {
         let mut transfer: TransferIngestion = TransferIngestion::new();
         let schema_check: DataFrame = transfer.check_schema_validity(filepath).unwrap();
 
-        let tcol = schema_check.column("log_index");
+        let tcol = schema_check.column("transaction_hash");
         println!("{:?}", tcol);
 
         // 1) block_number: rle compression
@@ -94,7 +94,7 @@ impl Transfer {
 
 
         // write to parquet
-        self.write_parquet(filepath)?;
+        // self.write_parquet(filepath)?;
 
         Ok(())
     }
