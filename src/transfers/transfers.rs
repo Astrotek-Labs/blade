@@ -9,6 +9,7 @@ use crate::transfers::compression::{
     RLECompressedBlockNumberSeries, 
     RLECompressedTransactionIndexSeries, 
     RLECompressedLogIndexSeries,
+    DictionaryCompressedTransactionHashSeries,
     NormalizedCompressedValueStrings
 };
 use super::writer::parquet_writer;
@@ -79,11 +80,21 @@ impl Transfer {
         self.dataframes.push(compressed_trans_index?);
 
 
-        // 3) log_index: 
+        // 3) log_index: rle compression
         let mut log_index_compression = RLECompressedLogIndexSeries::new();
         let compressed_log_index = log_index_compression.create_compressed_df(&schema_check);
         self.dataframes.push(compressed_log_index?);
-        
+
+
+        // 4) transaction_hash: dictionary encoding
+        let mut transaction_hash_compression = DictionaryCompressedTransactionHashSeries::new();
+        let compressed_transaction_hash = transaction_hash_compression.compress(&schema_check);
+        // println!("uniques: {:?}", compressed_transaction_hash);
+
+
+        let bin_idx = "01110011001";
+        let intval = isize::from_str_radix(bin_idx, 2).unwrap();
+        println!("intval{}", intval);
         
 
 
