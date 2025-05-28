@@ -10,6 +10,10 @@ pub use log_index::RLECompressedLogIndexSeries;
 pub mod transaction_hash;
 pub use transaction_hash::DictionaryCompressedTransactionHashSeries;
 
+pub mod erc20;
+pub use erc20::RLECompressedErc20Series;
+
+
 pub mod value_string;
 pub use value_string::NormalizedCompressedValueStrings;
 

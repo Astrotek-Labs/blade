@@ -37,14 +37,11 @@ impl DictionaryCompressedTransactionHashSeries {
             let val = item.unwrap();
             let formatted_val = &val[2..];
             let hex_string = hex::decode(formatted_val).unwrap();
-
             if seen.insert(hex_string.clone()) {
                 self.index.push(index as u32);
                 self.hashes.push(hex_string);
             }
         }
-        // println!("index: {:?}", self.index);
-        // println!("hash: {:?}", self.hashes);
         Ok(())
     }
 
@@ -63,8 +60,6 @@ impl DictionaryCompressedTransactionHashSeries {
         println!("compressed tx hash size: {:?}", compressed_mem_size);
         Ok(df)
     }
-
-
 
     // pub fn decompress(&mut self) -> Result<()> {
     //     // decode 

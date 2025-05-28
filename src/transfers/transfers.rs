@@ -10,6 +10,7 @@ use crate::transfers::compression::{
     RLECompressedTransactionIndexSeries, 
     RLECompressedLogIndexSeries,
     DictionaryCompressedTransactionHashSeries,
+    RLECompressedErc20Series,
     NormalizedCompressedValueStrings
 };
 use super::writer::parquet_writer;
@@ -85,11 +86,14 @@ impl Transfer {
 
         // 4) transaction_hash: dictionary encoding
         let mut transaction_hash_compression = DictionaryCompressedTransactionHashSeries::new();
-        // let compressed_transaction_hash = transaction_hash_compression.compress(&schema_check);
-        // println!("uniques: {:?}", compressed_transaction_hash);
         let compressed_transaction_df = transaction_hash_compression.create_compressed_df(&schema_check);
-        println!("uniques: {:?}", compressed_transaction_df);
         self.dataframes.push(compressed_transaction_df?);
+
+        // 5) erc20: rle compression
+        let mut token_compression = RLECompressedErc20Series::new();
+        let compressed_tokens_df = token_compression.create_compressed_df(&schema_check);
+        self.dataframes.push(compressed_tokens_df?);
+        // println!("compressed tokens: {:?}", compressed_tokens);
 
 
 
