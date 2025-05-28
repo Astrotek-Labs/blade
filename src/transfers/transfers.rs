@@ -57,7 +57,6 @@ impl Transfer {
         Ok(())
     }
 
-
     /// Compress iteratively goes through parquet file columns, applying specific
     /// compression algorithms to each, to maximize compression ratios.
     pub fn compress(&mut self, filepath: &PathBuf) -> Result<()> {
@@ -66,8 +65,8 @@ impl Transfer {
         let mut transfer: TransferIngestion = TransferIngestion::new();
         let schema_check: DataFrame = transfer.check_schema_validity(filepath).unwrap();
 
-        let tcol = schema_check.column("transaction_hash");
-        println!("{:?}", tcol);
+        // let tcol = schema_check.column("transaction_hash");
+        // println!("{:?}", tcol);
 
         // 1) block_number: rle compression
         let mut block_compression: RLECompressedBlockNumberSeries = RLECompressedBlockNumberSeries::new(); 
@@ -79,23 +78,20 @@ impl Transfer {
         let compressed_trans_index = transaction_compression.create_compressed_df(&schema_check);
         self.dataframes.push(compressed_trans_index?);
 
-
         // 3) log_index: rle compression
         let mut log_index_compression = RLECompressedLogIndexSeries::new();
         let compressed_log_index = log_index_compression.create_compressed_df(&schema_check);
         self.dataframes.push(compressed_log_index?);
 
-
         // 4) transaction_hash: dictionary encoding
         let mut transaction_hash_compression = DictionaryCompressedTransactionHashSeries::new();
-        let compressed_transaction_hash = transaction_hash_compression.compress(&schema_check);
+        // let compressed_transaction_hash = transaction_hash_compression.compress(&schema_check);
         // println!("uniques: {:?}", compressed_transaction_hash);
+        let compressed_transaction_df = transaction_hash_compression.create_compressed_df(&schema_check);
+        println!("uniques: {:?}", compressed_transaction_df);
+        self.dataframes.push(compressed_transaction_df?);
 
 
-        let bin_idx = "01110011001";
-        let intval = isize::from_str_radix(bin_idx, 2).unwrap();
-        println!("intval{}", intval);
-        
 
 
         // 9) value_strings: normalization compression 
@@ -105,7 +101,7 @@ impl Transfer {
 
 
         // write to parquet
-        // self.write_parquet(filepath)?;
+        self.write_parquet(filepath)?;
 
         Ok(())
     }
