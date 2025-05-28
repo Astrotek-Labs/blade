@@ -2,7 +2,6 @@
 //       Current thought is to stack individual columns as unique
 //       dataframes, and then append into one parquet file to write.
 
-
 // example code for writing stacked parquet dfs
 // TODO: solve for index values
 // let mut df1 = df!(
@@ -30,20 +29,19 @@ use anyhow::Result;
 use std::path::PathBuf;
 use polars::prelude::*;
 
+
 pub fn parquet_writer(output_filepath: PathBuf, dataframes: Vec<DataFrame>) -> Result<()> {
 
-    // Stack all DataFrames vertically
-    let mut combined_df = dataframes[0].clone();
-    for df in &dataframes[1..] {
-        combined_df = combined_df.vstack(df)?;
+    if dataframes.is_empty() {
+        panic!("Dataframe is empty, please check input dataset.")
+        // return Err(error);
     }
 
-    // Write to parquet
-    // let mut file = File::create("data/combined.parquet")?;
+    let df_diagonal_concat = polars::functions::concat_df_diagonal(&dataframes)?;
 
+    println!("Combined dataframe shape: {:?}", df_diagonal_concat.shape());
+    
     let mut file = File::create(&output_filepath)?;
-    println!("file {:?}", file);
-    ParquetWriter::new(&mut file).finish(&mut combined_df)?;
-
+    ParquetWriter::new(&mut file).finish(&mut df_diagonal_concat.clone())?;
     Ok(())
 }

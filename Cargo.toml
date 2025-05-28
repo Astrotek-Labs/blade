@@ -11,5 +11,5 @@ float_eq = "1.0.1"
 num-bigint = "0.4.6"
 num-traits = "0.2.19"
 owo-colors = "4.2.0"
-polars = { version = "0.47.1", features = ["parquet"]}
+polars = { version = "0.47.1", features = ["parquet", "diagonal_concat"]}
 schemars = "0.8.22"
