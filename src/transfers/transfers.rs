@@ -66,7 +66,7 @@ impl Transfer {
     pub fn compress(&mut self, filepath: &PathBuf) -> Result<()> {
         
         let start_time = Instant::now();
-        println!(">> [START] Compression beginning");
+        println!(">> {} Compression beginning", "[START]".bright_cyan());
         println!("--------------------------------------------------");
 
         // Instantiate TransferIngestion (ingestion.rs); validate schema against transfer dataset
@@ -121,7 +121,7 @@ impl Transfer {
 
         let elapsed_time = start_time.elapsed();
         println!("--------------------------------------------------");
-        println!("<< [DONE] Completed in {:.2?}", elapsed_time);
+        println!("<< {} Completed in {:.2?}", "[END]".bright_cyan(), elapsed_time);
 
         Ok(())
     }
