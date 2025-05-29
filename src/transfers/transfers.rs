@@ -13,6 +13,10 @@ use crate::transfers::compression::{
     RLECompressedLogIndexSeries,
     DictionaryCompressedTransactionHashSeries,
     RLECompressedErc20Series,
+    // RLECompressedFromAddressSeries,
+    DictionaryCompressedFromAddressSeries,
+    // RLECompressedToAddressSeries,
+    DictionaryCompressedToAddressSeries,
     NormalizedCompressedValueStrings,
     RLECompressedChainIdSeries
 };
@@ -74,7 +78,7 @@ impl Transfer {
         let mut transfer: TransferIngestion = TransferIngestion::new();
         let schema_check: DataFrame = transfer.check_schema_validity(filepath).unwrap();
 
-        // let tcol = schema_check.column("transaction_hash");
+        let tcol = schema_check.column("to_address");
         // println!("{:?}", tcol);
 
         // 1) block_number: rle compression
@@ -101,8 +105,17 @@ impl Transfer {
         let mut token_compression = RLECompressedErc20Series::new();
         let compressed_tokens_df = token_compression.create_compressed_df(&schema_check);
         self.dataframes.push(compressed_tokens_df?);
-        // println!("compressed tokens: {:?}", compressed_tokens);
 
+
+        // n) from_address: rle compression
+        let mut from_address_compression = DictionaryCompressedFromAddressSeries::new();
+        let compressed_from_address_df = from_address_compression.create_compressed_df(&schema_check);
+        self.dataframes.push(compressed_from_address_df?);
+
+        // n) to_address: rle compression
+        let mut to_address_compression = DictionaryCompressedToAddressSeries::new();
+        let compressed_to_address_df = to_address_compression.create_compressed_df(&schema_check);
+        // self.dataframes.push(compressed_to_address_df?);
 
 
         // 9) value_strings: normalization compression 
@@ -110,18 +123,16 @@ impl Transfer {
         let comopressed_value_string = value_string_compression.create_compressed_df(&schema_check);
         self.dataframes.push(comopressed_value_string?);
 
-
         // 11) chain_id: rle compression
         let mut chain_id_compression = RLECompressedChainIdSeries::new();
         let compressed_chain_id_df = chain_id_compression.create_compressed_df(&schema_check);
         // println!("chain id compression: {:?}", compressed_chain_id_df?);
         self.dataframes.push(compressed_chain_id_df?);
 
-
-
         // write to parquet
         // self.write_parquet(filepath)?;
 
+        // End time and output
         let elapsed_time = start_time.elapsed();
         println!("--------------------------------------------------");
         println!("<< {} Completed in {:.2?}", "[END]".bright_cyan(), elapsed_time);

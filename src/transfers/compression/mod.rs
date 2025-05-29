@@ -14,6 +14,15 @@ pub mod erc20;
 pub use erc20::RLECompressedErc20Series;
 
 
+pub mod from_address;
+// pub use from_address::RLECompressedFromAddressSeries;
+pub use from_address::DictionaryCompressedFromAddressSeries;
+
+pub mod to_address;
+// pub use to_address::RLECompressedToAddressSeries;
+pub use to_address::DictionaryCompressedToAddressSeries;
+
+
 pub mod chain_id;
 pub use chain_id::RLECompressedChainIdSeries;
 
