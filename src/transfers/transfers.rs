@@ -11,7 +11,8 @@ use crate::transfers::compression::{
     RLECompressedLogIndexSeries,
     DictionaryCompressedTransactionHashSeries,
     RLECompressedErc20Series,
-    NormalizedCompressedValueStrings
+    NormalizedCompressedValueStrings,
+    RLECompressedChainIdSeries
 };
 use super::writer::parquet_writer;
 
@@ -97,6 +98,11 @@ impl Transfer {
 
 
 
+        // n) chain_id: rle compression
+        let mut chain_id_compression = RLECompressedChainIdSeries::new();
+        let compressed_chain_id_df = chain_id_compression.create_compressed_df(&schema_check);
+        // println!("chain id compression: {:?}", compressed_chain_id_df?);
+        self.dataframes.push(compressed_chain_id_df?);
 
         // 9) value_strings: normalization compression 
         let mut value_string_compression: NormalizedCompressedValueStrings = NormalizedCompressedValueStrings::new();
@@ -105,7 +111,7 @@ impl Transfer {
 
 
         // write to parquet
-        self.write_parquet(filepath)?;
+        // self.write_parquet(filepath)?;
 
         Ok(())
     }

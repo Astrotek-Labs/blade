@@ -14,6 +14,10 @@ pub mod erc20;
 pub use erc20::RLECompressedErc20Series;
 
 
+pub mod chain_id;
+pub use chain_id::RLECompressedChainIdSeries;
+
+
 pub mod value_string;
 pub use value_string::NormalizedCompressedValueStrings;
 
