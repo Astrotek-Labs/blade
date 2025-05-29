@@ -56,10 +56,8 @@ impl RLECompressedErc20Series {
                             self.counts.capacity() * mem::size_of::<u16>();
         let compression_ratio = token_size as f64 / compressed_size as f64;
 
-        // Optional output print statements for comparison
-        println!("Original token series: {} bytes", token_size.red());
-        println!("Compressed token series: {} bytes", compressed_size.green());
-        println!("Compression ratio {:.2}", compression_ratio.bright_blue());
+        // // Optional output print statements for comparison
+        println!("[ERC20 MEM] {} → {} bytes ({:.2}x)", token_size.to_string().red(), compressed_size.to_string().green(), compression_ratio.to_string().bright_blue());
 
         // assert that output is equal in len to input
         // assert_eq!()

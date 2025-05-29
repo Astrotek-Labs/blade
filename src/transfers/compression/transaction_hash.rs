@@ -1,4 +1,5 @@
 use hex::{decode, encode};
+use std::mem;
 use anyhow::Result;
 use polars::prelude::*;
 use std::collections::HashMap;
@@ -27,8 +28,6 @@ impl DictionaryCompressedTransactionHashSeries {
     pub fn compress(&mut self, dataset: &DataFrame) -> Result<()> {
 
         let tx_hashes = dataset.column("transaction_hash").unwrap();
-        let uncompressed_mem_size = tx_hashes.len() * std::mem::size_of::<polars::datatypes::AnyValue>();
-        println!("uncompressed tx hash size: {:?}", uncompressed_mem_size);
 
         let mut seen: HashSet<Vec<u8>> = HashSet::new();
         let tx_hash_series = tx_hashes.str().unwrap();
@@ -42,6 +41,14 @@ impl DictionaryCompressedTransactionHashSeries {
                 self.hashes.push(hex_string);
             }
         }
+
+        // Output stats to terminal
+        let uncompressed_mem_size = tx_hashes.len() * std::mem::size_of::<polars::datatypes::AnyValue>();
+        let compressed_size = self.index.capacity() * mem::size_of::<u32>() + 
+                            self.hashes.capacity() * mem::size_of::<u16>();
+        let compression_ratio = uncompressed_mem_size as f64 / compressed_size as f64;
+        println!("[TX HASH MEM] {} → {} bytes ({:.2}x)", uncompressed_mem_size.to_string().red(), compressed_size.to_string().green(), compression_ratio.to_string().bright_blue());
+
         Ok(())
     }
 
@@ -57,7 +64,7 @@ impl DictionaryCompressedTransactionHashSeries {
             .iter()
             .map(|col| col.len() * std::mem::size_of::<polars::datatypes::AnyValue>())
             .sum();
-        println!("compressed tx hash size: {:?}", compressed_mem_size);
+        // println!("compressed tx hash size: {:?}", compressed_mem_size);
         Ok(df)
     }
 

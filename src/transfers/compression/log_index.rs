@@ -56,10 +56,9 @@ impl RLECompressedLogIndexSeries {
                             self.counts.capacity() * mem::size_of::<u16>();
         let compression_ratio = log_index_size as f64 / compressed_size as f64;
 
-        // Optional output print statements for comparison
-        println!("Original log index: {} bytes", log_index_size.red());
-        println!("Compressed log index: {} bytes", compressed_size.green());
-        println!("Compression ratio {:.2}", compression_ratio.bright_blue());
+        // // Optional output print statements for comparison
+        println!("[LOG INDEX MEM] {} → {} bytes ({:.2}x)", log_index_size.to_string().red(), compressed_size.to_string().green(), compression_ratio.to_string().bright_blue());
+
 
         // assert that output is equal in len to input
         // assert_eq!()

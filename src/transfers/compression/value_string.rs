@@ -68,10 +68,8 @@ impl NormalizedCompressedValueStrings {
         let compressed_size = normalized_vec.capacity() * mem::size_of::<u16>();
         let compression_ratio = original_str_len as f64 / compressed_size as f64;
 
-        // Print comparisons to terminal
-        println!("Original value string index: {} bytes", original_str_len.red());
-        println!("Compressed value string index: {} bytes", compressed_size.green());
-        println!("Compression ratio {:.2}", compression_ratio.bright_blue());
+        // // Print comparisons to terminal
+        println!("[VALUE STRINGS MEM] {} → {} bytes ({:.2}x)", original_str_len.to_string().red(), compressed_size.to_string().green(), compression_ratio.to_string().bright_blue());
 
         // Get index len and set values to return
         self.normalized_vs_vec.extend(normalized_vec);

@@ -1,7 +1,9 @@
 // external packages
 use std::path::PathBuf;
+use std::time::Instant;
 use polars::prelude::*;
 use anyhow::Result;
+use owo_colors::OwoColorize;
 
 // internal code
 use super::ingestion::TransferIngestion;
@@ -63,6 +65,10 @@ impl Transfer {
     /// compression algorithms to each, to maximize compression ratios.
     pub fn compress(&mut self, filepath: &PathBuf) -> Result<()> {
         
+        let start_time = Instant::now();
+        println!(">> [START] Compression beginning");
+        println!("--------------------------------------------------");
+
         // Instantiate TransferIngestion (ingestion.rs); validate schema against transfer dataset
         let mut transfer: TransferIngestion = TransferIngestion::new();
         let schema_check: DataFrame = transfer.check_schema_validity(filepath).unwrap();
@@ -111,7 +117,11 @@ impl Transfer {
 
 
         // write to parquet
-        self.write_parquet(filepath)?;
+        // self.write_parquet(filepath)?;
+
+        let elapsed_time = start_time.elapsed();
+        println!("--------------------------------------------------");
+        println!("<< [DONE] Completed in {:.2?}", elapsed_time);
 
         Ok(())
     }
