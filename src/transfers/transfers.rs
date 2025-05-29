@@ -66,6 +66,7 @@ impl Transfer {
     pub fn compress(&mut self, filepath: &PathBuf) -> Result<()> {
         
         let start_time = Instant::now();
+        println!("--------------------------------------------------");
         println!(">> {} Compression beginning", "[START]".bright_cyan());
         println!("--------------------------------------------------");
 
@@ -104,16 +105,18 @@ impl Transfer {
 
 
 
-        // n) chain_id: rle compression
+        // 9) value_strings: normalization compression 
+        let mut value_string_compression: NormalizedCompressedValueStrings = NormalizedCompressedValueStrings::new();
+        let comopressed_value_string = value_string_compression.create_compressed_df(&schema_check);
+        self.dataframes.push(comopressed_value_string?);
+
+
+        // 11) chain_id: rle compression
         let mut chain_id_compression = RLECompressedChainIdSeries::new();
         let compressed_chain_id_df = chain_id_compression.create_compressed_df(&schema_check);
         // println!("chain id compression: {:?}", compressed_chain_id_df?);
         self.dataframes.push(compressed_chain_id_df?);
 
-        // 9) value_strings: normalization compression 
-        let mut value_string_compression: NormalizedCompressedValueStrings = NormalizedCompressedValueStrings::new();
-        let comopressed_value_string = value_string_compression.create_compressed_df(&schema_check);
-        self.dataframes.push(comopressed_value_string?);
 
 
         // write to parquet
@@ -122,6 +125,7 @@ impl Transfer {
         let elapsed_time = start_time.elapsed();
         println!("--------------------------------------------------");
         println!("<< {} Completed in {:.2?}", "[END]".bright_cyan(), elapsed_time);
+        println!("--------------------------------------------------");
 
         Ok(())
     }
