@@ -7,6 +7,9 @@
 4. Write output parquet via `_update_path` impl
 5. Output filepath is in place from incoming filepath with prefix of "_BLADE"
 
+## General
+- Value string / binary / f64 are redundant. To reduce file size binary and f64 are dropped
+  as then can be calcualted when decompressing from the value string.
 
 ## Supported datasets
 1. Transfers
