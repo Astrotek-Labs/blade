@@ -30,18 +30,38 @@ use std::path::PathBuf;
 use polars::prelude::*;
 
 
+// pub fn parquet_writer(output_filepath: PathBuf, dataframes: Vec<DataFrame>) -> Result<()> {
+// 
+//     if dataframes.is_empty() {
+//         panic!("Dataframe is empty, please check input dataset.")
+//         // return Err(error);
+//     }
+// 
+//     let df_diagonal_concat = polars::functions::concat_df_diagonal(&dataframes)?;
+// 
+//     println!("Combined dataframe shape: {:?}", df_diagonal_concat.shape());
+//     
+//     let mut file = File::create(&output_filepath)?;
+//     ParquetWriter::new(&mut file).finish(&mut df_diagonal_concat.clone())?;
+//     Ok(())
+// }
+// 
+// 
+// 
+// 
+// 
+
+
+
+// horizontal concatenation
 pub fn parquet_writer(output_filepath: PathBuf, dataframes: Vec<DataFrame>) -> Result<()> {
-
     if dataframes.is_empty() {
-        panic!("Dataframe is empty, please check input dataset.")
-        // return Err(error);
+        panic!("Dataframe is empty, please check input dataset.");
     }
-
-    let df_diagonal_concat = polars::functions::concat_df_diagonal(&dataframes)?;
-
-    println!("Combined dataframe shape: {:?}", df_diagonal_concat.shape());
     
+    let df_combined = polars::functions::concat_df_horizontal(&dataframes, true)?;
+
     let mut file = File::create(&output_filepath)?;
-    ParquetWriter::new(&mut file).finish(&mut df_diagonal_concat.clone())?;
+    ParquetWriter::new(&mut file).finish(&mut df_combined.clone())?;
     Ok(())
 }

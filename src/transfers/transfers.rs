@@ -111,7 +111,7 @@ impl Transfer {
 
 
         // write to parquet
-        // self.write_parquet(filepath)?;
+        self.write_parquet(filepath)?;
 
         Ok(())
     }
