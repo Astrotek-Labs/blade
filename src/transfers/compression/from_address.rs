@@ -61,7 +61,6 @@ impl DictionaryCompressedFromAddressSeries {
 
         }
         
-
         // Output stats to terminal
         let uncompressed_mem_size = addresses.len() * std::mem::size_of::<polars::datatypes::AnyValue>();
         let compressed_size = self.index.capacity() * mem::size_of::<u32>() + 

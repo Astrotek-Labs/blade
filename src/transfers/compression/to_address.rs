@@ -21,22 +21,45 @@ impl DictionaryCompressedToAddressSeries {
         }
     }
 
-    pub fn compress(&mut self, dataset: &DataFrame) -> Result<()> {
 
+    pub fn compress(&mut self, dataset: &DataFrame) -> Result<()> {
+        // extracted column data
         let addresses = dataset.column("to_address").unwrap();
-        let mut seen: HashSet<Vec<u8>> = HashSet::new();
+
+        // data for conditional logic
+        let unique_addresses: usize = dataset.column("to_address").unwrap().n_unique()?;
+        let total_addresses: usize = addresses.len();
+        let unique_ratio: f64 = unique_addresses as f64 / total_addresses as f64;
         let to_address_series = addresses.str().unwrap();
 
-        for (index, item) in to_address_series.iter().enumerate() {
-            let val = item.unwrap();
-            let formatted_val = &val[2..];
-            let hex_string = hex::decode(formatted_val).unwrap();
-            if seen.insert(hex_string.clone()) {
+        if unique_ratio < 0.3 {
+            // dictionary compression
+            println!("unique ratio sub 0.3, proceeding with dictionary compression");
+            let mut seen: HashSet<Vec<u8>> = HashSet::new();
+
+            for (index, item) in to_address_series.iter().enumerate() {
+                let val = item.unwrap();
+                let formatted_val = &val[2..];
+                let hex_string = hex::decode(formatted_val).unwrap();
+                if seen.insert(hex_string.clone()) {
+                    self.index.push(index as u32);
+                    self.to_addresses.push(hex_string);
+                }
+            }
+
+        } else {
+            // remove '0x' and aggregate
+            println!("unique ratio > 0.3");
+            for (index, item) in to_address_series.iter().enumerate() {
+                let val = item.unwrap();
+                let formatted_val = &val[2..];
+                let hex_string = hex::decode(formatted_val).unwrap();
                 self.index.push(index as u32);
                 self.to_addresses.push(hex_string);
             }
-        }
 
+        }
+        
         // Output stats to terminal
         let uncompressed_mem_size = addresses.len() * std::mem::size_of::<polars::datatypes::AnyValue>();
         let compressed_size = self.index.capacity() * mem::size_of::<u32>() + 
@@ -46,6 +69,7 @@ impl DictionaryCompressedToAddressSeries {
 
         Ok(())
     }
+
 
 
     pub fn create_compressed_df(&mut self, dataset: &DataFrame) -> Result<DataFrame> {
