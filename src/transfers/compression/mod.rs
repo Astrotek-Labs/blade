@@ -23,6 +23,10 @@ pub mod to_address;
 pub use to_address::DictionaryCompressedToAddressSeries;
 
 
+pub mod address;
+pub use address::DictionaryCompressedAddressSeries;
+
+
 pub mod chain_id;
 pub use chain_id::RLECompressedChainIdSeries;
 

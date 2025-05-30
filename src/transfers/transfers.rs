@@ -13,10 +13,9 @@ use crate::transfers::compression::{
     RLECompressedLogIndexSeries,
     DictionaryCompressedTransactionHashSeries,
     RLECompressedErc20Series,
-    // RLECompressedFromAddressSeries,
     DictionaryCompressedFromAddressSeries,
-    // RLECompressedToAddressSeries,
     DictionaryCompressedToAddressSeries,
+    DictionaryCompressedAddressSeries,
     NormalizedCompressedValueStrings,
     RLECompressedChainIdSeries
 };
@@ -78,7 +77,7 @@ impl Transfer {
         let mut transfer: TransferIngestion = TransferIngestion::new();
         let schema_check: DataFrame = transfer.check_schema_validity(filepath).unwrap();
 
-        let tcol = schema_check.column("to_address");
+        // let tcol = schema_check.column("to_address");
         // println!("{:?}", tcol);
 
         // 1) block_number: rle compression
@@ -107,16 +106,32 @@ impl Transfer {
         self.dataframes.push(compressed_tokens_df?);
 
 
-        // n) from_address: rle compression
-        let mut from_address_compression = DictionaryCompressedFromAddressSeries::new();
-        let compressed_from_address_df = from_address_compression.create_compressed_df(&schema_check);
-        self.dataframes.push(compressed_from_address_df?);
+        // n) addresses: dictionary encoding
+        let mut address_compression = DictionaryCompressedAddressSeries::new();
+        let compressed_addresses = address_compression.create_compressed_df(&schema_check)?;
+        // println!("Compressed addresses: {:?}", compressed_addresses);
+        for df in compressed_addresses {
+            println!("df memory: {} bytes, shape: {:?}", df.estimated_size(), df.shape());
+            // println!("df is {:?}", df);
+            self.dataframes.push(df);
+        }
 
-        // n) to_address: rle compression
-        let mut to_address_compression = DictionaryCompressedToAddressSeries::new();
-        let compressed_to_address_df = to_address_compression.create_compressed_df(&schema_check);
-        // self.dataframes.push(compressed_to_address_df?);
 
+//         // n) from_address: dictionary encoding 
+//         let mut from_address_compression = DictionaryCompressedFromAddressSeries::new();
+//         let compressed_from_address_df = from_address_compression.create_compressed_df(&schema_check)?;
+//         // self.dataframes.push(compressed_from_address_df?);
+//         for df in compressed_from_address_df {
+//             self.dataframes.push(df);
+//         }
+// 
+//         // // n) to_address: dictionary encoding 
+//         let mut to_address_compression = DictionaryCompressedToAddressSeries::new();
+//         let compressed_to_address_df = to_address_compression.create_compressed_df(&schema_check)?;
+//         for df in compressed_to_address_df {
+//             self.dataframes.push(df);
+//         }
+//         // self.dataframes.push(compressed_to_address_df?);
 
         // 9) value_strings: normalization compression 
         let mut value_string_compression: NormalizedCompressedValueStrings = NormalizedCompressedValueStrings::new();
@@ -130,7 +145,7 @@ impl Transfer {
         self.dataframes.push(compressed_chain_id_df?);
 
         // write to parquet
-        // self.write_parquet(filepath)?;
+        self.write_parquet(filepath)?;
 
         // End time and output
         let elapsed_time = start_time.elapsed();

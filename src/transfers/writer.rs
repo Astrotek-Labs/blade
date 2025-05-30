@@ -60,6 +60,7 @@ pub fn parquet_writer(output_filepath: PathBuf, dataframes: Vec<DataFrame>) -> R
     }
     
     let df_combined = polars::functions::concat_df_horizontal(&dataframes, true)?;
+    
     let mut file = File::create(&output_filepath)?;
     ParquetWriter::new(&mut file).finish(&mut df_combined.clone())?;
     Ok(())
