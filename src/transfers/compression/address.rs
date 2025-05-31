@@ -31,6 +31,9 @@ impl DictionaryCompressedAddressSeries {
         let from_addresses: &Column = dataset.column("from_address").unwrap();
         let to_addresses: &Column = dataset.column("to_address").unwrap();
 
+        let from_address_series = from_addresses.str().unwrap();
+        let to_address_series = to_addresses.str().unwrap();
+
         // Check uniqueness ratio
         let unique_from = from_addresses.n_unique()?;
         let unique_to = to_addresses.n_unique()?;
@@ -40,18 +43,20 @@ impl DictionaryCompressedAddressSeries {
         let to_ratio = unique_to as f64 / total_rows as f64;
 
         if from_ratio > 0.3 || to_ratio > 0.3 {
-            // Before cloning, deduplicate strings
-            // Convert to categorical (dictionary-encoded)
-
-            let from_cat = from_addresses.cast(&DataType::String)?;
-            let to_cat = to_addresses.cast(&DataType::String)?;
-            let df = DataFrame::new(vec![from_cat, to_cat])?;
+            let combined: Vec<String> = from_address_series.iter()
+                .zip(to_address_series.iter())
+                .map(|(from, to)| format!("{}{}", &from.unwrap()[2..], &to.unwrap()[2..]))
+                .collect();
+            
+            let df = df! {
+                "address_pairs" => combined
+            }?;
             return Ok(CompressResult::Original(df));
         }
 
         // Compression logic
-        let from_address_series = from_addresses.str().unwrap();
-        let to_address_series = to_addresses.str().unwrap();
+        // let from_address_series = from_addresses.str().unwrap();
+        // let to_address_series = to_addresses.str().unwrap();
         let mut address_to_index: HashMap<String, u32> = HashMap::new();
         let mut unique_pairs: Vec<String> = Vec::new();
         let mut all_indices: Vec<u32> = Vec::new();

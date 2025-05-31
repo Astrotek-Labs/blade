@@ -77,13 +77,14 @@ impl Transfer {
         let mut transfer: TransferIngestion = TransferIngestion::new();
         let schema_check: DataFrame = transfer.check_schema_validity(filepath).unwrap();
 
-        // let tcol = schema_check.column("to_address");
-        // println!("{:?}", tcol);
+        let columns: Vec<String> = schema_check.get_column_names().iter().map(|s| s.to_string()).collect();
 
-        // 1) block_number: rle compression
-        let mut block_compression: RLECompressedBlockNumberSeries = RLECompressedBlockNumberSeries::new(); 
-        let compressed_blocks_df = block_compression.create_compressed_df(&schema_check);
-        self.dataframes.push(compressed_blocks_df?);
+        if columns.contains(&"block_number".to_string()) {
+            // 1) block_number: rle compression
+            let mut block_compression: RLECompressedBlockNumberSeries = RLECompressedBlockNumberSeries::new(); 
+            let compressed_blocks_df = block_compression.create_compressed_df(&schema_check);
+            self.dataframes.push(compressed_blocks_df?);
+        }
 
         // 2) transaction_index: rle compression
         let mut transaction_compression: RLECompressedTransactionIndexSeries = RLECompressedTransactionIndexSeries::new();
@@ -145,7 +146,7 @@ impl Transfer {
         self.dataframes.push(compressed_chain_id_df?);
 
         // write to parquet
-        self.write_parquet(filepath)?;
+        // self.write_parquet(filepath)?;
 
         // End time and output
         let elapsed_time = start_time.elapsed();
